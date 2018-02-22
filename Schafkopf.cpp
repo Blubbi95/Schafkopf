@@ -34,7 +34,7 @@ int playedBy; // saves the player who announced the game
 int partner; //saves the player who is playing with playedBy
 int first; // saves the player who went first this turn
 int turn; // game turn counter
-bool tout; // saves if the game was played as a tout
+int tout; // saves if the game was played as a tout
 
 debug() //debug function (show every card of every player)
 {
