@@ -10,9 +10,14 @@ Schafkopf
 
 /*
 TODO:
-
 Tout
+printGame only if it's more valuable than current playedGame (so you can't guess the other player's cards as easily)
+Valid Move: rufspiel partner ace
+
+highcard
+
 AI
+
 Playing for money?
 */
 
@@ -31,10 +36,10 @@ int pile[4]; // array to save played cards every turn
 int score[4]; // playerscore
 int playedGame=0; // saves the played the game; 9=ES, 8=GS, 7=HS, 6=SS, 5=W, 4=ER, 3=GR, 2=HR, 1=SR, 0=P
 int playedBy; // saves the player who announced the game
-int partner; //saves the player who is playing with playedBy
+int tout; // saves if game was played as tout
+int partner; // saves the player who is playing with playedBy
 int first; // saves the player who went first this turn
 int turn; // game turn counter
-int tout; // saves if the game was played as a tout
 
 debug() //debug function (show every card of every player)
 {
@@ -272,7 +277,7 @@ bool validMove(int player, int card) // checks if chosen move is valid //TODO:if
 						break;
 					}
 				}
-				if(findCard(41)==player && color(hands[player][card])==4 && hands[player][card]!=41 || color(pile[first])!=0 && color(pile[first])!= 4 && !outOfOptions && hands[player][card]==41)//if partner has ace in hand and he wants to play a card of same suit that isn't the ace, or if color hasn't been polkayed this round and partner doesn't go first
+				if(findCard(41)==player && color(hands[player][card])==4 && hands[player][card]!=41 || color(pile[first])!=0 && color(pile[first])!= 4 && !outOfOptions && hands[player][card]==41 || !outOfOptions && pile[first]==0 && hands[player][card]==41)//if partner has ace in hand and he wants to play a card of same suit that isn't the ace, or if color hasn't been polkayed this round and partner doesn't go first
 					return false;//ADD!: allow partner to play ace if the color of every card in his hand is either 0 or the color of the called ace
 				break;
 			case 2://grünruf
@@ -284,7 +289,7 @@ bool validMove(int player, int card) // checks if chosen move is valid //TODO:if
 						break;
 					}
 				}
-				if(findCard(21)==player && color(hands[player][card])==2 && hands[player][card]!=21 || color(pile[first])!=0 && color(pile[first])!= 2 && !outOfOptions && hands[player][card]==21)
+				if(findCard(21)==player && color(hands[player][card])==2 && hands[player][card]!=21 || color(pile[first])!=0 && color(pile[first])!= 2 && !outOfOptions && hands[player][card]==21 || !outOfOptions && pile[first]==0 && hands[player][card]==21)
 					return false;
 				break;
 			case 3://eichelruf
@@ -296,7 +301,7 @@ bool validMove(int player, int card) // checks if chosen move is valid //TODO:if
 						break;
 					}
 				}
-				if(findCard(11)==player && color(hands[player][card])==1 && hands[player][card]!=11 || color(pile[first])!=0 && color(pile[first])!= 1 && !outOfOptions && hands[player][card]==11)
+				if(findCard(11)==player && color(hands[player][card])==1 && hands[player][card]!=11 || color(pile[first])!=0 && color(pile[first])!= 1 && !outOfOptions && hands[player][card]==11 || !outOfOptions && pile[first]==0 && hands[player][card]==11)
 					return false;
 				break;
 		}
@@ -312,39 +317,24 @@ int highCard() // find the player with the highest card of the "pile" of played 
 		if (color(pile[highest])!=color(pile[i]))//if different color
 		{
 			if(color(pile[i])==5)//if one is trump
-			{
-				//printf("\n1: pile[%i]: %i, color:%i, highest: %i ,pile[highest]: %i, color:%i\n",i,pile[i],color(pile[i]),highest,pile[highest],color(pile[highest]));
 				highest=i;
-			}
 		}
 		else if(color(pile[i])==5)//if both are trump
 		{
 			if(pile[highest]%10==pile[i]%10) //if both have same face value
 			{
 				if (pile[i]<pile[highest]) //check which card has better color
-					{
-					//printf("\n2: pile[%i]: %i, color:%i, highest: %i ,pile[highest]: %i, color:%i\n",i,pile[i],color(pile[i]),highest,pile[highest],color(pile[highest]));
 					highest=i;
-					}
 			}
 			else if(pile[i]%10==4 || pile[i]%10==5 && pile[highest]%10!=4)//if card is ober or card is unter and highest is not ober
-				{
-				//printf("\n3: pile[%i]: %i, color:%i, highest: %i ,pile[highest]: %i, color:%i\n",i,pile[i],color(pile[i]),highest,pile[highest],color(pile[highest]));
 				highest=i;
-				}
 			else if(pile[i]<pile[highest]&&!(pile[highest]%10==5 || pile[highest]%10==4))
-				{
-				//printf("\n4: pile[%i]: %i, color:%i, highest: %i ,pile[highest]: %i, color:%i\n",i,pile[i],color(pile[i]),highest,pile[highest],color(pile[highest]));
 				highest=i;
-				}
 		}
 		else //if both are color
 		{
 			if(pile[i]<pile[highest])
-				{
-				//printf("\n5: pile[%i]: %i, color:%i, highest: %i ,pile[highest]: %i, color:%i\n",i,pile[i],color(pile[i]),highest,pile[highest],color(pile[highest]));
 				highest=i;
-				}
 		}
 	}
 	
@@ -616,36 +606,31 @@ main()
 	do
 	{
 		int cards[24] = {11,12,13,14,15,16,21,22,23,24,25,26,31,32,33,34,35,36,41,42,43,44,45,46}; //initializing all available cards as number-codes. First digit = suit, second digit = rank
-		int i=0, j=0, k=0,player=0, card=0, game=0,winner,trick; // start indicates which player will go first each turn (usually the one who had the last highCard)
+		int i=0, j=0,index,length=24,player=0, card=0, game=0,winner,trick; // start indicates which player will go first each turn (usually the one who had the last highCard)
 		char input;
 		first=start;
 		playedGame=0;
 		playedBy=-1;
 		partner=-1;
-		tout=false;
 		
 		for (i=0;i<4;i++)
-		{
 			score[i]=0; // reset score
-		}
 		
 		for (i=0;i<4;i++) //loop through all players, shuffle and deal cards
 		{
 			for (j=0;j<6;j++) //loop through all cards in hand
 			{
-				do 
-				{
-					k=rand()%24; // random number 0-23
-				} while(cards[k]==0); // new random number while card already used
-				hands[i][j]=cards[k]; // put card into one of the hands
-				cards[k]=0; // mark card as used
+				index=rand()%length;
+				hands[i][j]=cards[index]; // put card into one of the hands
+				cards[index]=cards[length-1]; // mark card as used
+				length-=1;
 			}
 		}
 		system("cls");
 		//SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN|FOREGROUND_BLUE); //set title color to cyan
 		printTitle();
-		//SetConsoleTextAttribute(hConsole, saved_attributes);
 		//debug();
+		//SetConsoleTextAttribute(hConsole, saved_attributes);
 		
 		for (turn=0;turn<6;turn++) // Main game loop, 6 rounds
 		{
@@ -742,11 +727,11 @@ main()
 			printf("\nSpieler %i und Spieler %i haben ",playedBy+1,partner+1);
 			if (score[playedBy]+score[partner]>60)
 			{
-				printf("gewonnen (%i Augen)",score[playedBy]+score[partner]>90 ? (score[playedBy]+score[partner]==120?"schwarz ":"mit Schneider "):"",score[playedBy]+score[partner]);
+				printf("%sgewonnen (%i Augen)",score[playedBy]+score[partner]>90 ? (score[playedBy]+score[partner]==120?"schwarz ":"mit Schneider "):"",score[playedBy]+score[partner]);
 			}
 			else
 			{
-				printf("verloren (%i Augen)",score[playedBy]+score[partner]>90 ? (score[playedBy]+score[partner]==120?"schwarz ":"mit Schneider "):"",score[playedBy]+score[partner]);
+				printf("%sverloren (%i Augen)",score[playedBy]+score[partner]>90 ? (score[playedBy]+score[partner]==120?"schwarz ":"mit Schneider "):"",score[playedBy]+score[partner]);
 			}
 		}
 		else if(playedGame>=4 && tout==false)
