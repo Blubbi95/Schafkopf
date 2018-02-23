@@ -39,7 +39,7 @@ int playedBy; // saves the player who announced the game
 int tout; // saves if game was played as tout
 int partner; // saves the player who is playing with playedBy
 int first; // saves the player who went first this turn
-int turn; // game turn counter
+bool turn; // game turn counter
 
 debug() //debug function (show every card of every player)
 {
@@ -227,7 +227,7 @@ int color(int card)
 					return 5;
 			}
 			break;
-		case 8: // Grünsolo
+		case 8: // GrÃ¼nsolo
 			for (i=0;i<12;i++)
 			{
 				if (card==trumps4[i])
@@ -280,7 +280,7 @@ bool validMove(int player, int card) // checks if chosen move is valid //TODO:if
 				if(findCard(41)==player && color(hands[player][card])==4 && hands[player][card]!=41 || color(pile[first])!=0 && color(pile[first])!= 4 && !outOfOptions && hands[player][card]==41 || !outOfOptions && pile[first]==0 && hands[player][card]==41)//if partner has ace in hand and he wants to play a card of same suit that isn't the ace, or if color hasn't been polkayed this round and partner doesn't go first
 					return false;//ADD!: allow partner to play ace if the color of every card in his hand is either 0 or the color of the called ace
 				break;
-			case 2://grünruf
+			case 2://grÃ¼nruf
 				for (i=0;i<6;i++)
 				{
 					if(color(hands[player][i])!=0 && color(hands[player][i])!=2)
