@@ -16,13 +16,13 @@ sort cards in player's hand
 */
 
 
-# include <stdio.h>
-# include <stdlib.h>
-# include <time.h>
-# include <ctype.h>
-# include <conio.h>
-# include <unistd.h>
-# include <windows.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <ctype.h>
+#include <conio.h>
+#include <unistd.h>
+#include <windows.h>
 
 #define black 0
 #define dblue 1
@@ -633,14 +633,6 @@ findPartner()
 
 main()
 {
-	
-//	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-//	CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
-//	WORD saved_attributes;
-//	
-//	GetConsoleScreenBufferInfo(hConsole, &consoleInfo);//save current console attributes
-//	saved_attributes = consoleInfo.wAttributes;
-	
 	char cont;
 	srand(time(NULL));
 	int start=rand()%4;
@@ -751,7 +743,7 @@ main()
 //				printf("pile%i: %i\n",player,pile[player]);
 			}
 			
-			//this happens each turn when all players played their cards
+			//this happens each turn when all players have played their cards
 			
 			winner=highCard();
 			trick=pileScore();
