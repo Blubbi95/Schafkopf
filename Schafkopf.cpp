@@ -36,10 +36,10 @@ int pile[4]; // array to save played cards every turn
 int score[4]; // playerscore
 int playedGame=0; // saves the played the game; 9=ES, 8=GS, 7=HS, 6=SS, 5=W, 4=ER, 3=GR, 2=HR, 1=SR, 0=P
 int playedBy; // saves the player who announced the game
-int tout; // saves if game was played as tout
+bool tout; // saves if game was played as tout
 int partner; // saves the player who is playing with playedBy
 int first; // saves the player who went first this turn
-bool turn; // game turn counter
+int turn; // game turn counter
 
 debug() //debug function (show every card of every player)
 {
@@ -380,6 +380,16 @@ play(int player, int card)
 	return 0;
 }
 
+int countColor(int player, int c)
+{
+	int i, count=0;
+	for (i=0;i<6;i++)
+	{
+		if(color(hands[player][i])==c)
+			count++;
+	}
+	return count;
+}
 
 int chooseCard(int player)
 {
