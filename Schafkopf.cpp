@@ -415,6 +415,16 @@ play(int player, int card)
 	return 0;
 }
 
+int countColor(int player, int c)
+{
+	int i, count=0;
+	for (i=0;i<6;i++)
+	{
+		if(color(hands[player][i])==c)
+			count++;
+	}
+	return count;
+}
 
 int chooseCard(int player)
 {
