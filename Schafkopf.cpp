@@ -10,26 +10,36 @@ Schafkopf
 
 /*
 TODO:
-Tout
-printGame only if it's more valuable than current playedGame (so you can't guess the other player's cards as easily)
-Valid Move: rufspiel partner ace
-
-highcard
-
 AI
-
-Playing for money?
+Playing for money
+sort cards in player's hand
 */
 
 
-# include <stdio.h>
-# include <stdlib.h>
-# include <time.h>
-# include <ctype.h>
-# include <conio.h>
-# include <unistd.h>
-# include <windows.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <time.h>
+#include <ctype.h>
+#include <conio.h>
+#include <unistd.h>
+#include <windows.h>
 
+#define black 0
+#define dblue 1
+#define dgreen 2
+#define dturquoise 3
+#define dred 4
+#define dpink 5
+#define dyellow 6
+#define lgrey 7
+#define grey 8
+#define blue 9
+#define green 10
+#define turquoise 11
+#define red 12
+#define pink 13
+#define yellow 14
+#define white 15
 
 int hands[4][6]; //2D array, 4 rows (players) 6 columns (cards in hand)
 int pile[4]; // array to save played cards every turn
@@ -64,21 +74,38 @@ debug() //debug function (show every card of every player)
 	printf("==== E N D   O F   D E B U G ====\n");
 }
 
+
+void textColor(int fg, int bg)
+{
+	SetConsoleTextAttribute(GetStdHandle(STD_OUTPUT_HANDLE), fg+16*bg);
+}
+
 printTitle() // print game title
 {
+	textColor(yellow, black);
 	printf( "  ____       _            __ _                __ \n"
 	    	" / ___|  ___| |__   __ _ / _| | _____  _ __  / _|\n"
         	" \\___ \\ / __| '_ \\ / _` | |_| |/ / _ \\| '_ \\| |_ \n"
         	"  ___) | (__| | | | (_| |  _|   < (_) | |_) |  _|\n"
-    		" |____/ \\___|_| |_|\\__,_|_| |_|\\_\\___/| .__/|_|  \n"
-	    	"    by Thomas Redwig                  |_|       \n\n");
+    		" |____/ \\___|_| |_|\\__,_|_| |_|\\_\\___/| .__/|_|  \n");
+    		textColor(red,black);
+    		printf("    by Thomas Redwig  ");
+    		textColor(yellow,black);
+	    	printf("                |_|       \n\n");
+	textColor(white,black);
 }
 
 printTurn(int turn) // print turn number with border
 {
+	textColor(yellow,black);
 	printf("\n\t%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",201,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,187);
-	printf("\t%c     R U N D E  %i     %c\n",186, turn+1,186);
+	printf("\t%c     ",186);
+	textColor(red,black);
+	printf("R U N D E  %i",turn+1);
+	textColor(yellow,black);
+	printf("     %c\n",186);
 	printf("\t%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c%c\n",200,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,205,188);
+	textColor(white,black);
 }
 
 printCard(int player, int card) // translate decimal code to card name
@@ -86,16 +113,20 @@ printCard(int player, int card) // translate decimal code to card name
 	switch((hands[player][card]-(hands[player][card]%10))/10) // switch on first digit of card-number-code
 	{
 		case 1:
-			printf("Eichel-");
+			textColor(dyellow,black);
+			printf("Eichel-   ");
 			break;
 		case 2:
-			printf("Gr%cn-",129);
+			textColor(dgreen,black);
+			printf("Gr%cn-     ",129);
 			break;
 		case 3:
-			printf("Herz-");
+			textColor(red,black);
+			printf("Herz-     ");
 			break;
 		case 4:
-			printf("Schellen-");
+			textColor(yellow,black);
+			printf("Schellen- ");
 			break;
 		default:
 			printf("");
@@ -125,11 +156,13 @@ printCard(int player, int card) // translate decimal code to card name
 			printf("");
 			break;
 	}
+	textColor(white,black);
 		
 }
 
 printGame(int game) // translate decimal code to game name
 {
+	textColor(turquoise,black);
 	switch(game)
 	{
 		case 9:
@@ -163,11 +196,13 @@ printGame(int game) // translate decimal code to game name
 			printf("Passe");
 			break;
 		default:
+			textColor(red,black);
 			printf("Fehler!");
 			break;
 	}
 	if (tout && game != 0)
 		printf(" Tout");
+	textColor(white,black);
 }
 
 int findCard(int card) // input card name as decimal, return player who owns card, returns -1 if card has already been played
@@ -418,12 +453,12 @@ int playerChooseGame()
 {
 	char input, option, option2;
 	int game=-1;
-	printf("\nM%cchten Sie ein Spiel ansagen? ",148);
+	printf("\nM%cchten Sie ein Spiel ansagen?\n",148);
 	do
 	{
 		do
 		{
-			printf("(S)olo, (W)enz, (G)eier, (R)ufspiel, (T)outspiele, (P)assen: ");
+			printf("(S)olo, (W)enz, (G)eier, (R)ufspiel, (T)outspiel, (P)assen:\n>");
 			fflush(stdin);
 			input=getchar();
 		} while(toupper(input)!='S' && toupper(input)!='W' && toupper(input)!='R' && toupper(input)!='G' && toupper(input)!='P' && toupper(input)!='T');
@@ -432,7 +467,7 @@ int playerChooseGame()
 			case 'T':
 				do
 				{
-				printf("Welches Spiel m%cchten Sie als Tout ansagen? (S)olo, (W)enz, (G)eier, (Z)ur%cck: ",148,129);
+				printf("Welches Spiel m%cchten Sie als Tout ansagen?\n(S)olo, (W)enz, (G)eier, (Z)ur%cck:\n>",148,129);
 					fflush(stdin);
 					option=getchar();
 				} while(toupper(option)!='S' && toupper(option)!='W' && toupper(option)!='G' && toupper(option)!='Z');
@@ -441,7 +476,7 @@ int playerChooseGame()
 					case 'S':
 						do
 						{
-							printf("Farbe? (E)ichel, (G)r%cn, (H)erz, (S)chellen, (Z)ur%cck: ",129,129);
+							printf("Farbe? (E)ichel, (G)r%cn, (H)erz, (S)chellen, (Z)ur%cck:\n>",129,129);
 							fflush(stdin);
 							option2=getchar();
 						} while(toupper(option2)!='E' && toupper(option2)!='G' && toupper(option2)!='H' && toupper(option2)!='S' && toupper(option2)!='Z');
@@ -484,7 +519,7 @@ int playerChooseGame()
 			case 'S':
 				do
 				{
-					printf("Farbe? (E)ichel, (G)r%cn, (H)erz, (S)chellen, (Z)ur%cck: ",129,129);
+					printf("Farbe? (E)ichel, (G)r%cn, (H)erz, (S)chellen, (Z)ur%cck:\n>",129,129);
 					fflush(stdin);
 					option=getchar();
 				} while(toupper(option)!='E' && toupper(option)!='G' && toupper(option)!='H' && toupper(option)!='S' && toupper(option)!='Z');
@@ -510,7 +545,7 @@ int playerChooseGame()
 			case 'R':
 				do
 				{
-					printf("Farbe? (E)ichel, (G)r%cn, (S)chellen, (Z)ur%cck: ",129,129);
+					printf("Farbe? (E)ichel, (G)r%cn, (S)chellen, (Z)ur%cck:\n>",129,129);
 					fflush(stdin);
 					option=getchar();
 				} while(toupper(option)!='E' && toupper(option)!='G' && toupper(option)!='H' && toupper(option)!='S' && toupper(option)!='Z');
@@ -524,7 +559,9 @@ int playerChooseGame()
 						}
 						else
 							{
+								textColor(white,dred);
 								printf("Rufspiel nur erlaubt, wenn man mindestens eine Karte der Farbe besitzt, aber nicht das Ass!\n");
+								textColor(white,black);
 								game=-1;
 								break;
 							}
@@ -536,7 +573,9 @@ int playerChooseGame()
 						}
 						else
 							{
+								textColor(white,dred);
 								printf("Rufspiel nur erlaubt, wenn man mindestens eine Karte der Farbe besitzt, aber nicht das Ass!\n");
+								textColor(white,black);
 								game=-1;
 								break;
 							}
@@ -548,7 +587,9 @@ int playerChooseGame()
 						}
 						else
 							{
+								textColor(white,dred);
 								printf("Rufspiel nur erlaubt, wenn man mindestens eine Karte der Farbe besitzt, aber nicht das Ass!\n");
+								textColor(white,black);
 								game=-1;
 								break;
 							}
@@ -592,14 +633,6 @@ findPartner()
 
 main()
 {
-	
-//	HANDLE hConsole = GetStdHandle(STD_OUTPUT_HANDLE);
-//	CONSOLE_SCREEN_BUFFER_INFO consoleInfo;
-//	WORD saved_attributes;
-//	
-//	GetConsoleScreenBufferInfo(hConsole, &consoleInfo);//save current console attributes
-//	saved_attributes = consoleInfo.wAttributes;
-	
 	char cont;
 	srand(time(NULL));
 	int start=rand()%4;
@@ -706,11 +739,11 @@ main()
 					playerChooseCard();
 				else
 					play(player, chooseCard(player));
-//				printf("Color: %i\n",color(pile[player]));
+//				printf("color: %i\n",color(pile[player]));
 //				printf("pile%i: %i\n",player,pile[player]);
 			}
 			
-			//this happens each turn when all players played their cards
+			//this happens each turn when all players have played their cards
 			
 			winner=highCard();
 			trick=pileScore();
@@ -727,11 +760,15 @@ main()
 			printf("\nSpieler %i und Spieler %i haben ",playedBy+1,partner+1);
 			if (score[playedBy]+score[partner]>60)
 			{
+				textColor(green,black);
 				printf("%sgewonnen (%i Augen)",score[playedBy]+score[partner]>90 ? (score[playedBy]+score[partner]==120?"schwarz ":"mit Schneider "):"",score[playedBy]+score[partner]);
+				textColor(white,black);
 			}
 			else
 			{
+				textColor(red,black);
 				printf("%sverloren (%i Augen)",score[playedBy]+score[partner]>90 ? (score[playedBy]+score[partner]==120?"schwarz ":"mit Schneider "):"",score[playedBy]+score[partner]);
+				textColor(white,black);
 			}
 		}
 		else if(playedGame>=4 && tout==false)
@@ -739,11 +776,15 @@ main()
 			printf("\nSpieler %i hat ",playedBy+1);
 			if (score[playedBy]>60)
 			{
+				textColor(green,black);
 				printf("%sgewonnen (%i Augen)\n",score[playedBy]>90 ? (score[playedBy]==120?"schwarz ":"mit Schneider "):"",score[playedBy]);
+				textColor(white,black);
 			}
 			else
 			{
+				textColor(red,black);
 				printf("%sverloren (%i Augen)\n",score[playedBy]>0 ? (score[playedBy]>30?"schneiderfrei ":"mit Schneider "):"schwarz ",score[playedBy]);
+				textColor(white,black);
 			}
 		}
 		else if(playedGame>=4 && tout==true)
@@ -751,11 +792,15 @@ main()
 			printf("\nSpieler %i hat ",playedBy+1);
 			if (score[playedBy]==120)
 			{
+				textColor(green,black);
 				printf("gewonnen (%i Augen)\n",score[playedBy]);
+				textColor(white,black);
 			}
 			else
 			{
+				textColor(red,black);
 				printf("verloren (%i Augen)\n",score[playedBy]);
+				textColor(white,black);
 			}
 		}
 		else
