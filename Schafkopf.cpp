@@ -439,9 +439,39 @@ int chooseCard(int player)
 
 int chooseGame(int player)
 {
-	int game;
+	//int game_temp=playedGame;
+	//int playedGame=7;
+	int game=0, ober=0, unter=0, herz=0, blatt=0, eichel=0, schellen=0, i, card,col;
 	
-	game=0; // don't play, temp
+	for(i=0;i<6;i++)
+	{
+		card=hands[player][i];
+		if(card%10==4)
+			ober++;
+		if(card%10==5)
+			unter++;
+		if(card%10!=4 && card%10!=5)
+		{
+			col=(card-card%10)/10;
+			if(col==1)
+				eichel++;
+			if(col==2)
+				blatt++;
+			if(col==3)
+				herz++;
+			if(col==4)
+				schellen++;
+		}
+	}
+	if(ober>=2){
+		game=4;
+	}
+	
+	//printf("%i,%i,%i,%i,%i,%i",ober,unter,eichel,blatt,herz,schellen);
+	
+	
+	
+	//game=0; // don't play, temp
 	
 	return game;
 }
@@ -672,7 +702,7 @@ main()
 		system("cls");
 		//SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN|FOREGROUND_BLUE); //set title color to cyan
 		printTitle();
-		//debug();
+		debug();
 		//SetConsoleTextAttribute(hConsole, saved_attributes);
 		
 		for (turn=0;turn<6;turn++) // Main game loop, 6 rounds
