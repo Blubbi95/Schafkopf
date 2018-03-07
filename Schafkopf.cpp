@@ -13,6 +13,8 @@ TODO:
 AI
 Playing for money
 sort cards in player's hand
+
+https://www.sauspiel.de/schafkopf-lernen/strategie-kurze-karte
 */
 
 
@@ -193,6 +195,7 @@ printGame(int game) // translate decimal code to game name
 			printf("Schellenruf");
 			break;
 		case 0:
+			textColor(dturquoise,black);
 			printf("Passe");
 			break;
 		default:
@@ -219,7 +222,7 @@ int findCard(int card) // input card name as decimal, return player who owns car
 			}
 		}
 	}
-	//should only reach if card doesn't exist
+//should only reach if card doesn't exist
 	return -1;
 }
 
@@ -289,10 +292,6 @@ bool validMove(int player, int card) // checks if chosen move is valid //TODO:if
 		if (color(hands[player][i])==color(pile[first]))//check all of player's cards for trump
 			hasColor = true;
 	}
-//	printf("pile%i: %i\n",first, pile[first]);
-//	printf("Color pile first: %i\n",color(pile[first]));
-//	printf("Color card: %i\nhasColor: ",color(hands[player][card]));
-//	printf(hasColor ? "true\n" : "false\n");
 	if(card < 0 || card > 5) // check if move number exists
 		return false;
 	else if  (hands[player][card]==0) // check if card has already been played
@@ -313,9 +312,9 @@ bool validMove(int player, int card) // checks if chosen move is valid //TODO:if
 					}
 				}
 				if(findCard(41)==player && color(hands[player][card])==4 && hands[player][card]!=41 || color(pile[first])!=0 && color(pile[first])!= 4 && !outOfOptions && hands[player][card]==41 || !outOfOptions && pile[first]==0 && hands[player][card]==41)//if partner has ace in hand and he wants to play a card of same suit that isn't the ace, or if color hasn't been polkayed this round and partner doesn't go first
-					return false;//ADD!: allow partner to play ace if the color of every card in his hand is either 0 or the color of the called ace
+					return false;
 				break;
-			case 2://grÃ¼nruf
+			case 2://grünruf
 				for (i=0;i<6;i++)
 				{
 					if(color(hands[player][i])!=0 && color(hands[player][i])!=2)
@@ -439,22 +438,71 @@ int chooseCard(int player)
 
 int chooseGame(int player)
 {
-	int game;
+	//int game_temp=playedGame;
+	//int playedGame=7;
+	int game=0, ober=0, unter=0, herz=0, blatt=0, eichel=0, schellen=0, i, card,col;
 	
-	game=0; // don't play, temp
+	for(i=0;i<6;i++)//go through all cards in player's hand and count how many of a specific kind/color there are
+	{
+		card=hands[player][i];
+		if(card%10==4)
+			ober++;
+		if(card%10==5)
+			unter++;
+		if(card%10!=4 && card%10!=5)
+		{
+			switch((card-card%10)/10)
+			{
+				case 1:
+					eichel++;
+					break;
+				case 2:
+					blatt++;
+					break;
+				case 3:
+					herz++;
+					break;
+				case 4:
+					schellen++;
+					break;
+				default:
+					break;
+			}
+		}
+	}
+	
+	//printf("%i,%i,%i,%i,%i,%i",ober,unter,eichel,blatt,herz,schellen);
+	if(ober+unter+herz==5 && ober+unter>=2 && ober>=1 || ober+unter+herz==4 && ober>=2 && ober+unter>=3) // rufspiel
+	{
+		if(findCard(11)!=player && (findCard(12)==player || findCard(13)==player || findCard(16)==player))
+			game=3;
+		if(findCard(21)!=player && (findCard(22)==player || findCard(23)==player || findCard(26)==player))
+			game=2;
+		if(findCard(41)!=player && (findCard(42)==player || findCard(43)==player || findCard(46)==player))
+			game=1;
+	}
+	
+	
+//	if(ober>=2)//nah
+//		game=4;
+//	if(unter>=2)//especially nah
+//		game=5;
+	
 	
 	return game;
 }
 
 int playerChooseCard()
 {
-	int card;
+	int card, status;
+	char temp;
 	do
 	{
 		printf("Welche Karte m%cchten Sie spielen?: ",148);
-		scanf("%d",&card);
+		status = scanf("%d",&card);//status saves error value of scanf (1 if digit was read correctly)
+		scanf("%c",&temp);//catches \n character after pressing enter key
 		card-=1;
-	}while(!validMove(0, card));
+	}while(status!=1 || !validMove(0, card));//keep asking for input while move is not valid or input is not a number
 	play(0, card);
 	return card;
 }
@@ -649,7 +697,7 @@ main()
 	do
 	{
 		int cards[24] = {11,12,13,14,15,16,21,22,23,24,25,26,31,32,33,34,35,36,41,42,43,44,45,46}; //initializing all available cards as number-codes. First digit = suit, second digit = rank
-		int i=0, j=0,index,length=24,player=0, card=0, game=0,winner,trick; // start indicates which player will go first each turn (usually the one who had the last highCard)
+		int i=0, j=0,index,length=24,player=0, card=0, game=0,winner,trick;
 		char input;
 		first=start;
 		playedGame=0;
@@ -666,14 +714,12 @@ main()
 				index=rand()%length;
 				hands[i][j]=cards[index]; // put card into one of the hands
 				cards[index]=cards[length-1]; // mark card as used
-				length-=1;
+				length--;
 			}
 		}
 		system("cls");
-		//SetConsoleTextAttribute(hConsole, FOREGROUND_GREEN|FOREGROUND_BLUE); //set title color to cyan
 		printTitle();
-		//debug();
-		//SetConsoleTextAttribute(hConsole, saved_attributes);
+//debug();
 		
 		for (turn=0;turn<6;turn++) // Main game loop, 6 rounds
 		{
@@ -723,8 +769,7 @@ main()
 			getch();
 			system("cls"); //turn "log" on and off
 			printTurn(turn);
-			//debug();
-			//printf("\nEichel Ober ist bei Spieler %i\n",findCard(14)+1);s
+//debug();
 			printf("Gespielt wird ");
 			printGame(playedGame);
 			printf(" von Spieler %i",playedBy+1);
@@ -738,22 +783,14 @@ main()
 			printf("\n");
 			for (i=0;i<4;i++) // 4 player loop
 			{
-//				if (i==1)
-//				{
-//					printf("card: %i, player: %i ",pile[first],first+1);
-//					printf(isTrump(pile[first]) ? "trump\n" : "not trump\n");
-//				}
 				player=(first+i)%4;
-				//printf("\nplayer:%i, start:%i, i:%i\n", player,start,i);
 				if (player==0)
 					playerChooseCard();
 				else
 					play(player, chooseCard(player));
-//				printf("color: %i\n",color(pile[player]));
-//				printf("pile%i: %i\n",player,pile[player]);
 			}
 			
-			//this happens each turn when all players have played their cards
+//this happens each turn when all players have played their cards
 			
 			winner=highCard();
 			trick=pileScore();
@@ -762,54 +799,69 @@ main()
 			first=winner;
 		}
 		
-		// this happens after the game
+// this happens after the game
 		start++;
 		
 		if (playedGame<4 && playedGame>0)
 		{
-			printf("\nSpieler %i und Spieler %i haben ",playedBy+1,partner+1);
 			if (score[playedBy]+score[partner]>60)
 			{
-				textColor(green,black);
-				printf("%sgewonnen (%i Augen)",score[playedBy]+score[partner]>90 ? (score[playedBy]+score[partner]==120?"schwarz ":"mit Schneider "):"",score[playedBy]+score[partner]);
+				if (playedBy==0 || partner==0)
+					textColor(green,black);
+				else
+					textColor(red,black);
+				printf("\nSpieler %i und Spieler %i haben %sgewonnen (%i Augen)",playedBy+1,partner+1,score[playedBy]+score[partner]>90 ? (score[playedBy]+score[partner]==120?"schwarz ":"mit Schneider "):"",score[playedBy]+score[partner]);
 				textColor(white,black);
 			}
 			else
 			{
-				textColor(red,black);
-				printf("%sverloren (%i Augen)",score[playedBy]+score[partner]>90 ? (score[playedBy]+score[partner]==120?"schwarz ":"mit Schneider "):"",score[playedBy]+score[partner]);
+				if (playedBy==0 || partner==0)
+					textColor(red,black);
+				else
+					textColor(green,black);
+				printf("\nSpieler %i und Spieler %i haben %sverloren (%i Augen)",playedBy+1,partner+1,score[playedBy]+score[partner]>90 ? (score[playedBy]+score[partner]==120?"schwarz ":"mit Schneider "):"",score[playedBy]+score[partner]);
 				textColor(white,black);
 			}
 		}
 		else if(playedGame>=4 && tout==false)
 		{
-			printf("\nSpieler %i hat ",playedBy+1);
 			if (score[playedBy]>60)
 			{
-				textColor(green,black);
-				printf("%sgewonnen (%i Augen)\n",score[playedBy]>90 ? (score[playedBy]==120?"schwarz ":"mit Schneider "):"",score[playedBy]);
+				if (playedBy==0)
+					textColor(green,black);
+				else
+					textColor(red,black);
+				printf("\nSpieler %i hat %sgewonnen (%i Augen)\n",playedBy+1,score[playedBy]>90 ? (score[playedBy]==120?"schwarz ":"mit Schneider "):"",score[playedBy]);
 				textColor(white,black);
 			}
 			else
 			{
-				textColor(red,black);
-				printf("%sverloren (%i Augen)\n",score[playedBy]>0 ? (score[playedBy]>30?"schneiderfrei ":"mit Schneider "):"schwarz ",score[playedBy]);
+				if (playedBy==0)
+					textColor(red,black);
+				else
+					textColor(green,black);
+				printf("\nSpieler %i hat %sverloren (%i Augen)\n",playedBy+1,score[playedBy]>0 ? (score[playedBy]>30?"schneiderfrei ":"mit Schneider "):"schwarz ",score[playedBy]);
 				textColor(white,black);
 			}
 		}
 		else if(playedGame>=4 && tout==true)
 		{
-			printf("\nSpieler %i hat ",playedBy+1);
 			if (score[playedBy]==120)
 			{
-				textColor(green,black);
-				printf("gewonnen (%i Augen)\n",score[playedBy]);
+				if (playedBy==0)
+					textColor(green,black);
+				else
+					textColor(red,black);
+				printf("\nSpieler %i hat gewonnen (%i Augen)\n",playedBy+1,score[playedBy]);
 				textColor(white,black);
 			}
 			else
 			{
-				textColor(red,black);
-				printf("verloren (%i Augen)\n",score[playedBy]);
+				if (playedBy==0)
+					textColor(red,black);
+				else
+					textColor(green,black);
+				printf("\nSpieler %i hat verloren (%i Augen)\n",playedBy+1,score[playedBy]);
 				textColor(white,black);
 			}
 		}
