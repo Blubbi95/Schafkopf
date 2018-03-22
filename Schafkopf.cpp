@@ -283,7 +283,7 @@ int color(int card)
 	return ((card-card%10)/10);
 }
 
-bool validMove(int player, int card) // checks if chosen move is valid //TODO:if partner owns two cards of color that was called and nothing else while that color wasn't called he gets stuck in a loop
+bool validMove(int player, int card, bool error) // checks if chosen move is valid //TODO:if partner owns two cards of color that was called and nothing else while that color wasn't called he gets stuck in a loop
 {
 	int i;
 	bool hasColor=false, outOfOptions=true;
@@ -293,11 +293,35 @@ bool validMove(int player, int card) // checks if chosen move is valid //TODO:if
 			hasColor = true;
 	}
 	if(card < 0 || card > 5) // check if move number exists
+	{
+		if(error==true)
+		{
+			textColor(white,dred);
+			printf("Bitte geben Sie eine Zahl zwischen 1 und 6 ein!\n");
+			textColor(white,black);
+		}
 		return false;
+	}
 	else if  (hands[player][card]==0) // check if card has already been played
+	{
+		if(error==true)
+		{
+			textColor(white,dred);
+			printf("Diese Karte wurde bereits gespielt!\n");
+			textColor(white,black);
+		}	
 		return false;
+	}
 	else if (color(pile[first])!=color(hands[player][card]) && hasColor && pile[first]!=0)//check if player has suit or trump that was played first, if so, he has to play that color
+	{
+		if(error==true)
+		{
+			textColor(white,dred);
+			printf("Die Farbe (%s) muss zugegeben werden!\n",color(pile[first])==1? "Eichel" : color(pile[first])==2 ? "Gr\x81n" : color(pile[first])==3? "Herz" : color(pile[first])==4? "Schellen" : "Trumpf");
+			textColor(white,black);
+		}
 		return false;
+	}
 	else if (player==partner)
 	{
 		switch(playedGame)
@@ -311,8 +335,16 @@ bool validMove(int player, int card) // checks if chosen move is valid //TODO:if
 						break;
 					}
 				}
-				if(findCard(41)==player && color(hands[player][card])==4 && hands[player][card]!=41 || color(pile[first])!=0 && color(pile[first])!= 4 && !outOfOptions && hands[player][card]==41 || !outOfOptions && pile[first]==0 && hands[player][card]==41)//if partner has ace in hand and he wants to play a card of same suit that isn't the ace, or if color hasn't been polkayed this round and partner doesn't go first
-					return false;
+				if(findCard(41)==player && color(hands[player][card])==4 && hands[player][card]!=41 || color(pile[first])!=0 && color(pile[first])!= 4 && !outOfOptions && hands[player][card]==41 || !outOfOptions && pile[first]==0 && hands[player][card]==41)//if partner has ace in hand and he wants to play a card of same suit that isn't the ace, or if color hasn't been played this round and partner doesn't go first
+				{
+					if(error==true)
+						{
+							textColor(white,dred);
+							printf("Beachten Sie die Regeln des Rufspiels!\n");
+							textColor(white,black);
+						}
+						return false;
+				}
 				break;
 			case 2://grünruf
 				for (i=0;i<6;i++)
@@ -324,7 +356,15 @@ bool validMove(int player, int card) // checks if chosen move is valid //TODO:if
 					}
 				}
 				if(findCard(21)==player && color(hands[player][card])==2 && hands[player][card]!=21 || color(pile[first])!=0 && color(pile[first])!= 2 && !outOfOptions && hands[player][card]==21 || !outOfOptions && pile[first]==0 && hands[player][card]==21)
+				{
+				if(error==true)
+					{
+						textColor(white,dred);
+						printf("Beachten Sie die Regeln des Rufspiels!\n");
+						textColor(white,black);
+					}
 					return false;
+				}
 				break;
 			case 3://eichelruf
 				for (i=0;i<6;i++)
@@ -336,7 +376,15 @@ bool validMove(int player, int card) // checks if chosen move is valid //TODO:if
 					}
 				}
 				if(findCard(11)==player && color(hands[player][card])==1 && hands[player][card]!=11 || color(pile[first])!=0 && color(pile[first])!= 1 && !outOfOptions && hands[player][card]==11 || !outOfOptions && pile[first]==0 && hands[player][card]==11)
-					return false;
+				{
+					if(error==true)
+						{
+							textColor(white,dred);
+							printf("Beachten Sie die Regeln des Rufspiels!\n");
+							textColor(white,black);
+						}
+						return false;
+				}
 				break;
 		}
 	}
@@ -428,27 +476,36 @@ int countColor(int player, int c)
 int chooseCard(int player)
 {
 	int card;
+	//random temp
 	do
 	{
 		card = rand()%6;
-	}while(!validMove(player, card));
+	}while(!validMove(player, card, false));
 	return card;
 }
 
 
 int chooseGame(int player)
 {
-	//int game_temp=playedGame;
-	//int playedGame=7;
-	int game=0, ober=0, unter=0, herz=0, blatt=0, eichel=0, schellen=0, i, card,col;
+	int game=0, ober=0, unter=0, herz=0, blatt=0, eichel=0, schellen=0, ass=0, i, card,col;
 	
 	for(i=0;i<6;i++)//go through all cards in player's hand and count how many of a specific kind/color there are
 	{
 		card=hands[player][i];
-		if(card%10==4)
-			ober++;
-		if(card%10==5)
-			unter++;
+		switch(card%10)
+		{
+			case 4:
+				ober++;
+				break;
+			case 5:
+				unter++;
+				break;
+			case 1:
+				ass++;
+				break;
+			default:
+				break;
+		}
 		if(card%10!=4 && card%10!=5)
 		{
 			switch((card-card%10)/10)
@@ -470,7 +527,6 @@ int chooseGame(int player)
 			}
 		}
 	}
-	
 	//printf("%i,%i,%i,%i,%i,%i",ober,unter,eichel,blatt,herz,schellen);
 	if(ober+unter+herz==5 && ober+unter>=2 && ober>=1 || ober+unter+herz==4 && ober>=2 && ober+unter>=3) // rufspiel
 	{
@@ -481,7 +537,16 @@ int chooseGame(int player)
 		if(findCard(41)!=player && (findCard(42)==player || findCard(43)==player || findCard(46)==player))
 			game=1;
 	}
-	
+	if(ober>=3 || ober>=2 && findCard(14)==player) //enough ober for geier
+	{
+		if(ass>=2 || findCard(11)==player && (findCard(12)==player || findCard(13)==player) || findCard(21)==player && (findCard(22)==player || findCard(23)==player) || findCard(31)==player && (findCard(32)==player || findCard(33)==player) || findCard(41)==player && (findCard(42)==player || findCard(43)==player))
+			game=4;
+	}
+	if(unter>=3 || unter>=2 && findCard(15)==player) //enough unter for wenz
+	{
+		if(ass>=2 || findCard(11)==player && (findCard(12)==player || findCard(13)==player) || findCard(21)==player && (findCard(22)==player || findCard(23)==player) || findCard(31)==player && (findCard(32)==player || findCard(33)==player) || findCard(41)==player && (findCard(42)==player || findCard(43)==player))
+			game=5;
+	}
 	
 //	if(ober>=2)//nah
 //		game=4;
@@ -501,9 +566,14 @@ int playerChooseCard()
 		printf("Welche Karte m%cchten Sie spielen?: ",148);
 		status = scanf("%d",&card);//status saves error value of scanf (1 if digit was read correctly)
 		scanf("%c",&temp);//catches \n character after pressing enter key
-		card-=1;
-	}while(status!=1 || !validMove(0, card));//keep asking for input while move is not valid or input is not a number
-	play(0, card);
+		card--;
+		if(status!=1)
+		{
+			textColor(white, dred);
+			printf("Bitte geben Sie eine Zahl ein!\n");
+			textColor(white,black);
+		}
+	}while(status!=1 || !validMove(0, card, true));//keep asking for input while move is not valid or input is not a number
 	return card;
 }
 
@@ -784,8 +854,8 @@ main()
 			for (i=0;i<4;i++) // 4 player loop
 			{
 				player=(first+i)%4;
-				if (player==0)
-					playerChooseCard();
+				if (player==0)	
+					play(player,playerChooseCard());
 				else
 					play(player, chooseCard(player));
 			}
